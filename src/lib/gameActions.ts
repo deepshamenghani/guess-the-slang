@@ -323,5 +323,11 @@ export async function startNewGame(gameId: string) {
     }
   }
 
-  return newRoomCode;
+  // Set next_game_id on the old game so all connected players auto-redirect
+  await supabase
+    .from('games')
+    .update({ next_game_id: newGame.id } as any)
+    .eq('id', gameId);
+
+  return { newRoomCode, newGameId: newGame.id };
 }
