@@ -1,0 +1,74 @@
+import { SlangCard } from './SlangCard';
+import { TimerBar } from './TimerBar';
+import { Scoreboard } from './Scoreboard';
+import { endTimer } from '@/lib/gameActions';
+
+interface PlayerGameViewProps {
+  gameState: any;
+}
+
+export function PlayerGameView({ gameState }: PlayerGameViewProps) {
+  const { game, currentSlang, currentPlayer, isMyTurn, players } = gameState;
+
+  if (!currentSlang || !game) return null;
+
+  const showReveal = game.turn_state === 'reveal';
+  const isActive = game.turn_state === 'active';
+  const allPassed = showReveal && (game.pass_count ?? 0) >= players.length;
+
+  return (
+    <div className="min-h-screen flex flex-col p-4 pb-6">
+      {/* Turn indicator */}
+      <div className="text-center mb-4 animate-fade-in">
+        <p className="text-sm text-muted-foreground mb-1">
+          Slang {(game.current_slang_index ?? 0) + 1} of {game.slang_ids?.length ?? 30}
+        </p>
+        {isMyTurn ? (
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full font-display font-semibold">
+            ✨ It's your turn!
+          </div>
+        ) : currentPlayer ? (
+          <p className="font-display font-medium text-lg">
+            <span className="text-primary">{currentPlayer.name}</span>'s turn
+          </p>
+        ) : null}
+      </div>
+
+      {/* Timer */}
+      {isActive && isMyTurn && (
+        <div className="mb-4">
+          <TimerBar
+            duration={15}
+            running={true}
+            onComplete={() => endTimer(game.id)}
+          />
+        </div>
+      )}
+
+      {/* Slang card */}
+      <div className="flex-1 flex items-center justify-center">
+        {showReveal ? (
+          <div className="animate-bounce-in text-center">
+            {allPassed && (
+              <p className="font-display font-semibold text-lg text-muted-foreground mb-4">
+                😅 Nobody got this one!
+              </p>
+            )}
+            <SlangCard slang={currentSlang} showMeaning={true} />
+          </div>
+        ) : (
+          <SlangCard slang={currentSlang} showMeaning={false} />
+        )}
+      </div>
+
+      {/* Scoreboard */}
+      <div className="mt-4">
+        <Scoreboard
+          players={players}
+          currentPlayerId={game.turn_order?.[game.current_player_index ?? 0] ?? null}
+          hostPlayerId={game.host_player_id}
+        />
+      </div>
+    </div>
+  );
+}
