@@ -16,6 +16,7 @@ export function useGame(roomCode: string | undefined) {
   const [disconnectedNames, setDisconnectedNames] = useState<string[]>([]);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const prevPlayerIdsRef = useRef<Set<string>>(new Set());
 
   // Fetch game by room code
   const fetchGame = useCallback(async () => {
