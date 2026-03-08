@@ -11,6 +11,7 @@ interface GameOverViewProps {
 
 export function GameOverView({ gameState, navigate }: GameOverViewProps) {
   const { game, sortedPlayers, isHost, myPlayerId } = gameState;
+  const nonHostPlayers = sortedPlayers.filter((p: any) => p.id !== game?.host_player_id);
   const [loading, setLoading] = useState(false);
 
   const handleNewGame = async () => {
