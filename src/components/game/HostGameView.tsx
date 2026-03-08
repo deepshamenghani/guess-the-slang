@@ -14,7 +14,7 @@ import {
   handleDisconnectedTurn,
 } from '@/lib/gameActions';
 import { Button } from '@/components/ui/button';
-import { useEffect } from 'react';
+
 import {
   AlertDialog,
   AlertDialogAction,
