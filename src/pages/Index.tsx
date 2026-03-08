@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { createGame, joinGame } from '@/lib/gameActions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import logo from '@/assets/logo.png';
 
 const Index = () => {
   const [name, setName] = useState('');
