@@ -16,8 +16,10 @@ export function LobbyView({ gameState }: LobbyViewProps) {
     toast.success('Link copied!');
   };
 
+  const nonHostPlayers = players.filter((p: any) => p.id !== game.host_player_id);
+
   const handleStart = () => {
-    if (players.length >= 2) {
+    if (nonHostPlayers.length >= 2) {
       startGame(game.id);
     }
   };
