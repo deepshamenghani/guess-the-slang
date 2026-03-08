@@ -133,6 +133,26 @@ export function useGame(roomCode: string | undefined) {
   useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
   useEffect(() => { fetchSlangWords(); }, [fetchSlangWords]);
 
+  // Detect new/reconnected players and show toast (host notification)
+  useEffect(() => {
+    if (!game || game.status === 'lobby') {
+      // In lobby, just track IDs without toasting
+      prevPlayerIdsRef.current = new Set(players.filter(p => p.is_connected).map(p => p.id));
+      return;
+    }
+    const currentConnectedIds = new Set(players.filter(p => p.is_connected).map(p => p.id));
+    const prev = prevPlayerIdsRef.current;
+    if (prev.size > 0) {
+      currentConnectedIds.forEach(id => {
+        if (!prev.has(id) && id !== myPlayerId) {
+          const p = players.find(pl => pl.id === id);
+          if (p) toast.info(`${p.name} joined`);
+        }
+      });
+    }
+    prevPlayerIdsRef.current = currentConnectedIds;
+  }, [players, game?.status, myPlayerId]);
+
   // Show disconnect toasts
   useEffect(() => {
     if (disconnectedNames.length === 0) return;
