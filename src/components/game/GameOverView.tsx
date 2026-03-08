@@ -11,6 +11,7 @@ interface GameOverViewProps {
 
 export function GameOverView({ gameState, navigate }: GameOverViewProps) {
   const { game, sortedPlayers, isHost, myPlayerId } = gameState;
+  const nonHostPlayers = sortedPlayers.filter((p: any) => p.id !== game?.host_player_id);
   const [loading, setLoading] = useState(false);
 
   const handleNewGame = async () => {
@@ -23,7 +24,7 @@ export function GameOverView({ gameState, navigate }: GameOverViewProps) {
     setLoading(false);
   };
 
-  const winner = sortedPlayers[0];
+  const winner = nonHostPlayers[0];
   const isWinner = winner?.id === myPlayerId;
 
   return (
@@ -46,7 +47,7 @@ export function GameOverView({ gameState, navigate }: GameOverViewProps) {
             Final Standings
           </h3>
           <div className="space-y-2">
-            {sortedPlayers.map((player: any, i: number) => (
+            {nonHostPlayers.map((player: any, i: number) => (
               <div
                 key={player.id}
                 className={`flex items-center justify-between py-3 px-4 rounded-xl animate-slide-up ${
