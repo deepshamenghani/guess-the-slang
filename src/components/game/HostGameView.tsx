@@ -9,8 +9,20 @@ import {
   markCorrect,
   passToNext,
   transferHost,
+  endGameEarly,
 } from '@/lib/gameActions';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface HostGameViewProps {
   gameState: any;
@@ -54,6 +66,10 @@ export function HostGameView({ gameState }: HostGameViewProps) {
     }
   };
 
+  const handleEndGame = () => {
+    if (game) endGameEarly(game.id);
+  };
+
   if (!currentSlang || !game) return null;
 
   return (
@@ -74,26 +90,49 @@ export function HostGameView({ gameState }: HostGameViewProps) {
               </p>
             )}
           </div>
-          <div className="relative">
-            <button
-              onClick={() => setShowTransfer(!showTransfer)}
-              className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 bg-muted rounded-lg transition-colors"
-            >
-              ⚙️ Transfer Host
-            </button>
-            {showTransfer && (
-              <div className="absolute right-0 top-full mt-1 bg-card rounded-xl shadow-soft border p-2 z-10 min-w-48">
-                {nonHostPlayers.map((p: any) => (
-                  <button
-                    key={p.id}
-                    onClick={() => handleTransfer(p.id)}
-                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm transition-colors"
-                  >
-                    Transfer to {p.name}
-                  </button>
-                ))}
-              </div>
-            )}
+          <div className="flex items-center gap-2">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="text-sm text-destructive hover:text-destructive/80 px-3 py-1.5 bg-destructive/10 rounded-lg transition-colors">
+                  🛑 End Game
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>End the game?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to end the game? All players will be taken to the final leaderboard with the current scores.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleEndGame} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    End Game
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <div className="relative">
+              <button
+                onClick={() => setShowTransfer(!showTransfer)}
+                className="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 bg-muted rounded-lg transition-colors"
+              >
+                ⚙️ Transfer Host
+              </button>
+              {showTransfer && (
+                <div className="absolute right-0 top-full mt-1 bg-card rounded-xl shadow-soft border p-2 z-10 min-w-48">
+                  {nonHostPlayers.map((p: any) => (
+                    <button
+                      key={p.id}
+                      onClick={() => handleTransfer(p.id)}
+                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm transition-colors"
+                    >
+                      Transfer to {p.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
