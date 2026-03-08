@@ -28,6 +28,8 @@ export async function createGame(hostName: string): Promise<{ roomCode: string; 
 
   sessionStorage.setItem(`player-${game.id}`, player.id);
 
+  trackEvent('game_created', { room_code: roomCode, game_id: game.id });
+
   return { roomCode, gameId: game.id, playerId: player.id };
 }
 
