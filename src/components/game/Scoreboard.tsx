@@ -9,7 +9,7 @@ interface ScoreboardProps {
 }
 
 export function Scoreboard({ players, currentPlayerId, hostPlayerId }: ScoreboardProps) {
-  const sorted = [...players].sort((a, b) => b.score - a.score);
+  const sorted = [...players].filter(p => p.is_connected).sort((a, b) => b.score - a.score);
 
   return (
     <div className="card-game">
