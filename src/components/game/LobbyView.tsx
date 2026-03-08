@@ -14,15 +14,6 @@ const GENERATION_BUTTONS = [
   { value: 'Boomer', label: '📺 Boomer' },
 ];
 
-function parseGenerations(raw: string): string[] {
-  if (!raw || raw === 'mixed') return ALL_GENERATIONS;
-  return raw.split(',').filter(Boolean);
-}
-
-function isAllSelected(gens: string[]): boolean {
-  return ALL_GENERATIONS.every(g => gens.includes(g));
-}
-
 interface LobbyViewProps {
   gameState: any;
 }
@@ -31,8 +22,8 @@ export function LobbyView({ gameState }: LobbyViewProps) {
   const { game, players, isHost } = gameState;
   const shareUrl = getShareUrl(game.room_code);
   const rawGeneration: string = game.selected_generation ?? 'mixed';
-  const selectedGens = parseGenerations(rawGeneration);
-  const isMixed = isAllSelected(selectedGens);
+  const isMixed = rawGeneration === 'mixed';
+  const selectedGens = isMixed ? [] : rawGeneration.split(',').filter(Boolean);
 
   const copyLink = () => {
     navigator.clipboard.writeText(shareUrl);
@@ -53,17 +44,26 @@ export function LobbyView({ gameState }: LobbyViewProps) {
       return;
     }
 
-    let newGens: string[];
-    if (selectedGens.includes(value)) {
-      // Remove it, but don't allow empty
-      newGens = selectedGens.filter(g => g !== value);
-      if (newGens.length === 0) return;
-    } else {
-      newGens = [...selectedGens.filter(g => ALL_GENERATIONS.includes(g)), value];
+    // If currently mixed, switch to just this one generation
+    if (isMixed) {
+      setGameGeneration(game.id, value);
+      return;
     }
 
-    // If all selected, store as mixed
-    if (isAllSelected(newGens)) {
+    let newGens: string[];
+    if (selectedGens.includes(value)) {
+      newGens = selectedGens.filter(g => g !== value);
+      // If none left, go back to mixed
+      if (newGens.length === 0) {
+        setGameGeneration(game.id, 'mixed');
+        return;
+      }
+    } else {
+      newGens = [...selectedGens, value];
+    }
+
+    // If all individually selected, store as mixed
+    if (ALL_GENERATIONS.every(g => newGens.includes(g))) {
       setGameGeneration(game.id, 'mixed');
     } else {
       setGameGeneration(game.id, newGens.join(','));
