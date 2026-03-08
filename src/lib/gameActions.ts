@@ -137,11 +137,12 @@ export async function markCorrect(gameId: string, playerId: string, totalPlayers
         .update({ status: 'finished', turn_state: 'waiting' })
         .eq('id', gameId);
     } else {
+      const nextPlayerIndex = (currentPlayerIndex + 1) % totalPlayers;
       await supabase
         .from('games')
         .update({
           current_slang_index: nextSlangIndex,
-          current_player_index: 0,
+          current_player_index: nextPlayerIndex,
           turn_state: 'waiting',
           pass_count: 0,
         })
@@ -169,11 +170,12 @@ export async function passToNext(gameId: string, totalPlayers: number, totalSlan
           .update({ status: 'finished', turn_state: 'waiting' })
           .eq('id', gameId);
       } else {
+        const nextPlayerIndex = (currentPlayerIndex + 1) % totalPlayers;
         await supabase
           .from('games')
           .update({
             current_slang_index: nextSlangIndex,
-            current_player_index: 0,
+            current_player_index: nextPlayerIndex,
             turn_state: 'waiting',
             pass_count: 0,
           })
