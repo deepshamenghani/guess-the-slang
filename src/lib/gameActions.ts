@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { generateRoomCode, shuffleArray } from '@/lib/gameUtils';
+import { trackEvent } from '@/lib/analytics';
 
 export async function createGame(hostName: string): Promise<{ roomCode: string; gameId: string; playerId: string } | null> {
   const roomCode = generateRoomCode();
@@ -27,6 +28,8 @@ export async function createGame(hostName: string): Promise<{ roomCode: string; 
 
   sessionStorage.setItem(`player-${game.id}`, player.id);
 
+  trackEvent('game_created', { room_code: roomCode, game_id: game.id });
+
   return { roomCode, gameId: game.id, playerId: player.id };
 }
 
@@ -48,6 +51,9 @@ export async function joinGame(roomCode: string, playerName: string): Promise<{ 
   if (error || !player) return null;
 
   sessionStorage.setItem(`player-${game.id}`, player.id);
+
+  trackEvent('player_joined', { room_code: roomCode, game_id: game.id });
+
   return { gameId: game.id, playerId: player.id };
 }
 
@@ -105,6 +111,8 @@ export async function startGame(gameId: string, selectedGeneration: string = 'mi
       pass_count: 0,
     })
     .eq('id', gameId);
+
+  trackEvent('game_started', { game_id: gameId, generation: selectedGeneration, player_count: players.length });
 }
 
 export async function skipWord(gameId: string, currentSlangIds: string[], currentIndex: number, selectedGeneration: string = 'mixed') {
@@ -177,6 +185,7 @@ export async function markCorrect(gameId: string, playerId: string, totalPlayers
         .from('games')
         .update({ status: 'finished', turn_state: 'waiting' })
         .eq('id', gameId);
+      trackEvent('game_completed', { game_id: gameId });
     } else {
       const nextPlayerIndex = (currentPlayerIndex + 1) % totalPlayers;
       await supabase
@@ -210,6 +219,7 @@ export async function passToNext(gameId: string, totalPlayers: number, totalSlan
           .from('games')
           .update({ status: 'finished', turn_state: 'waiting' })
           .eq('id', gameId);
+        trackEvent('game_completed', { game_id: gameId });
       } else {
         const nextPlayerIndex = (currentPlayerIndex + 1) % totalPlayers;
         await supabase
@@ -249,6 +259,8 @@ export async function endGameEarly(gameId: string) {
     .from('games')
     .update({ status: 'finished', turn_state: 'waiting' })
     .eq('id', gameId);
+
+  trackEvent('end_game_early', { game_id: gameId });
 }
 
 export async function startNewGame(gameId: string) {
