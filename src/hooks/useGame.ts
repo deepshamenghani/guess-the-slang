@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
+import { toast } from 'sonner';
 
 type Game = Tables<'games'>;
 type Player = Tables<'game_players'>;
@@ -12,7 +13,9 @@ export function useGame(roomCode: string | undefined) {
   const [slangWords, setSlangWords] = useState<SlangWord[]>([]);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [disconnectedNames, setDisconnectedNames] = useState<string[]>([]);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // Fetch game by room code
   const fetchGame = useCallback(async () => {
