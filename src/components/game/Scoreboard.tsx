@@ -36,9 +36,6 @@ export function Scoreboard({ players, currentPlayerId, hostPlayerId }: Scoreboar
                   <span className="ml-1 text-xs text-muted-foreground">👑</span>
                 )}
               </span>
-              {!player.is_connected && (
-                <span className="text-xs text-muted-foreground">(disconnected)</span>
-              )}
             </div>
             <span className="font-display font-bold text-lg">{player.score}</span>
           </div>
