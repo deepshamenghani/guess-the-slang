@@ -73,7 +73,7 @@ export function PlayerGameView({ gameState }: PlayerGameViewProps) {
       {/* Scoreboard */}
       <div className="mt-4">
         <Scoreboard
-          players={nonHostPlayers}
+          players={connectedNonHostPlayers}
           currentPlayerId={game.turn_order?.[game.current_player_index ?? 0] ?? null}
           hostPlayerId={game.host_player_id}
         />

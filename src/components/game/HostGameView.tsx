@@ -73,6 +73,21 @@ export function HostGameView({ gameState }: HostGameViewProps) {
     if (game) endGameEarly(game.id);
   };
 
+  // Auto-skip turn if current player disconnected
+  useEffect(() => {
+    if (!game || game.status !== 'playing' || !currentPlayerId) return;
+    const currentP = players.find((p: any) => p.id === currentPlayerId);
+    if (currentP && !currentP.is_connected) {
+      handleDisconnectedTurn(
+        game.id,
+        game.turn_order ?? [],
+        game.current_player_index,
+        game.current_slang_index,
+        totalSlangs
+      );
+    }
+  }, [currentPlayerId, players]);
+
   if (!currentSlang || !game) return null;
 
   return (
