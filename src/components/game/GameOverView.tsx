@@ -47,7 +47,7 @@ export function GameOverView({ gameState, navigate }: GameOverViewProps) {
             Final Standings
           </h3>
           <div className="space-y-2">
-            {sortedPlayers.map((player: any, i: number) => (
+            {nonHostPlayers.map((player: any, i: number) => (
               <div
                 key={player.id}
                 className={`flex items-center justify-between py-3 px-4 rounded-xl animate-slide-up ${

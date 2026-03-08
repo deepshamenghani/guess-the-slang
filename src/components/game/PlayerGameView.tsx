@@ -41,13 +41,13 @@ export function PlayerGameView({ gameState }: PlayerGameViewProps) {
         ) : null}
       </div>
 
-      {/* Timer */}
-      {isActive && isMyTurn && (
+      {/* Timer — visible to all players during active turn */}
+      {isActive && (
         <div className="mb-4">
           <TimerBar
             duration={15}
             running={true}
-            onComplete={() => endTimer(game.id)}
+            onComplete={isMyTurn ? () => endTimer(game.id) : () => {}}
           />
         </div>
       )}
