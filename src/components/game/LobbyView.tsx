@@ -16,8 +16,10 @@ export function LobbyView({ gameState }: LobbyViewProps) {
     toast.success('Link copied!');
   };
 
+  const nonHostPlayers = players.filter((p: any) => p.id !== game.host_player_id);
+
   const handleStart = () => {
-    if (players.length >= 2) {
+    if (nonHostPlayers.length >= 2) {
       startGame(game.id);
     }
   };
@@ -64,7 +66,7 @@ export function LobbyView({ gameState }: LobbyViewProps) {
               </div>
             ))}
           </div>
-          {players.length < 2 && (
+          {nonHostPlayers.length < 2 && (
             <p className="text-center text-sm text-muted-foreground mt-4 animate-pulse-soft">
               Waiting for more players to join...
             </p>
@@ -74,10 +76,10 @@ export function LobbyView({ gameState }: LobbyViewProps) {
         {isHost && (
           <Button
             onClick={handleStart}
-            disabled={players.length < 2}
+            disabled={nonHostPlayers.length < 2}
             className="w-full h-14 text-lg font-display font-semibold rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-40"
           >
-            {players.length < 2 ? 'Need at least 2 players' : '🚀 Start Game'}
+            {nonHostPlayers.length < 2 ? 'Need at least 2 players' : '🚀 Start Game'}
           </Button>
         )}
 

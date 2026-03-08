@@ -7,21 +7,30 @@ interface SlangCardProps {
   slang: SlangWord;
   showMeaning?: boolean;
   showDetails?: boolean;
+  showGeneration?: boolean;
+  blurred?: boolean;
+  heroSize?: boolean;
 }
 
-export function SlangCard({ slang, showMeaning = false, showDetails = false }: SlangCardProps) {
+export function SlangCard({ slang, showMeaning = false, showDetails = false, showGeneration = false, blurred = false, heroSize = false }: SlangCardProps) {
   return (
-    <div className="card-game text-center animate-scale-in">
-      <div className="mb-4">
-        <span className={`generation-badge ${getGenerationColor(slang.generation)}`}>
-          {slang.generation}
-        </span>
-      </div>
-      <h2 className="slang-word text-gradient mb-6">
+    <div className={`text-center animate-scale-in ${heroSize ? '' : 'card-game'}`}>
+      {showGeneration && (
+        <div className="mb-4">
+          <span className={`generation-badge ${getGenerationColor(slang.generation)}`}>
+            {slang.generation}
+          </span>
+        </div>
+      )}
+      <h2
+        className={`font-display font-bold text-center leading-tight text-gradient transition-all duration-700 ${
+          heroSize ? 'text-6xl sm:text-7xl md:text-8xl' : 'text-5xl md:text-7xl'
+        } ${blurred ? 'blur-xl select-none' : 'blur-0'}`}
+      >
         {slang.word}
       </h2>
       {showMeaning && (
-        <div className="animate-fade-in space-y-4">
+        <div className="animate-fade-in space-y-4 mt-6">
           <p className="text-lg text-foreground/80 font-medium">
             {slang.meaning}
           </p>

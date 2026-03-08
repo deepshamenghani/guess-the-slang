@@ -67,8 +67,17 @@ export async function startGame(gameId: string) {
 
   if (!allSlangs || allSlangs.length === 0) return;
 
+  // Get the game to find host_player_id
+  const { data: gameData } = await supabase
+    .from('games')
+    .select('host_player_id')
+    .eq('id', gameId)
+    .single();
+
   const shuffledSlangs = shuffleArray(allSlangs).slice(0, 30);
-  const shuffledPlayers = shuffleArray(players);
+  // Exclude host from turn order
+  const nonHostPlayers = players.filter(p => p.id !== gameData?.host_player_id);
+  const shuffledPlayers = shuffleArray(nonHostPlayers);
 
   await supabase
     .from('games')
