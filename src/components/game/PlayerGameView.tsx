@@ -14,7 +14,11 @@ export function PlayerGameView({ gameState }: PlayerGameViewProps) {
 
   const showReveal = game.turn_state === 'reveal';
   const isActive = game.turn_state === 'active';
+  const isWaiting = game.turn_state === 'waiting';
   const allPassed = showReveal && (game.pass_count ?? 0) >= players.length;
+
+  // Filter out the host from scoreboard display
+  const nonHostPlayers = players.filter((p: any) => p.id !== game.host_player_id);
 
   return (
     <div className="min-h-screen flex flex-col p-4 pb-6">
@@ -45,7 +49,7 @@ export function PlayerGameView({ gameState }: PlayerGameViewProps) {
         </div>
       )}
 
-      {/* Slang card */}
+      {/* Slang card - hero sized, blurred when waiting */}
       <div className="flex-1 flex items-center justify-center">
         {showReveal ? (
           <div className="animate-bounce-in text-center">
@@ -54,17 +58,22 @@ export function PlayerGameView({ gameState }: PlayerGameViewProps) {
                 😅 Nobody got this one!
               </p>
             )}
-            <SlangCard slang={currentSlang} showMeaning={true} />
+            <SlangCard slang={currentSlang} showMeaning={true} heroSize />
           </div>
         ) : (
-          <SlangCard slang={currentSlang} showMeaning={false} />
+          <SlangCard
+            slang={currentSlang}
+            showMeaning={false}
+            heroSize
+            blurred={isWaiting}
+          />
         )}
       </div>
 
       {/* Scoreboard */}
       <div className="mt-4">
         <Scoreboard
-          players={players}
+          players={nonHostPlayers}
           currentPlayerId={game.turn_order?.[game.current_player_index ?? 0] ?? null}
           hostPlayerId={game.host_player_id}
         />

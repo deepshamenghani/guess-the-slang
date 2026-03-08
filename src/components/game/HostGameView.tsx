@@ -21,8 +21,9 @@ export function HostGameView({ gameState }: HostGameViewProps) {
   const [showConfetti, setShowConfetti] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
 
+  const nonHostPlayers = players.filter((p: any) => p.id !== game?.host_player_id);
   const currentPlayerId = game?.turn_order?.[game?.current_player_index ?? 0] ?? null;
-  const totalPlayers = players.length;
+  const totalPlayers = nonHostPlayers.length;
   const totalSlangs = game?.slang_ids?.length ?? 30;
   const isWaiting = game?.turn_state === 'waiting';
   const isActive = game?.turn_state === 'active';
@@ -82,7 +83,7 @@ export function HostGameView({ gameState }: HostGameViewProps) {
             </button>
             {showTransfer && (
               <div className="absolute right-0 top-full mt-1 bg-card rounded-xl shadow-soft border p-2 z-10 min-w-48">
-                {players.filter((p: any) => p.id !== game.host_player_id).map((p: any) => (
+                {nonHostPlayers.map((p: any) => (
                   <button
                     key={p.id}
                     onClick={() => handleTransfer(p.id)}
@@ -112,10 +113,10 @@ export function HostGameView({ gameState }: HostGameViewProps) {
                   😅 Nobody got this one!
                 </p>
               )}
-              <SlangCard slang={currentSlang} showMeaning={true} showDetails={true} />
+              <SlangCard slang={currentSlang} showMeaning={true} showDetails={true} showGeneration={true} />
             </div>
           ) : (
-            <SlangCard slang={currentSlang} showMeaning={true} showDetails={true} />
+            <SlangCard slang={currentSlang} showMeaning={true} showDetails={true} showGeneration={true} />
           )}
         </div>
 
@@ -165,7 +166,7 @@ export function HostGameView({ gameState }: HostGameViewProps) {
       {/* Sidebar scoreboard (desktop) */}
       <div className="lg:w-72 lg:flex-shrink-0">
         <Scoreboard
-          players={players}
+          players={nonHostPlayers}
           currentPlayerId={currentPlayerId}
           hostPlayerId={game.host_player_id}
         />
