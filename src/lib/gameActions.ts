@@ -111,7 +111,8 @@ export async function startGame(gameId: string, selectedGeneration: string = 'mi
       pass_count: 0,
     })
     .eq('id', gameId);
-}
+
+  trackEvent('game_started', { game_id: gameId, generation: selectedGeneration, player_count: players.length });
 
 export async function skipWord(gameId: string, currentSlangIds: string[], currentIndex: number, selectedGeneration: string = 'mixed') {
   // Fetch a replacement slang not already in the list
