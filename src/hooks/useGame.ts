@@ -142,6 +142,13 @@ export function useGame(roomCode: string | undefined) {
   useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
   useEffect(() => { fetchSlangWords(); }, [fetchSlangWords]);
 
+  // Show disconnect toasts
+  useEffect(() => {
+    if (disconnectedNames.length === 0) return;
+    const name = disconnectedNames[disconnectedNames.length - 1];
+    toast.info(`${name} has left the game`);
+  }, [disconnectedNames.length]);
+
   // Restore player ID from session storage
   useEffect(() => {
     if (game) {
@@ -151,6 +158,10 @@ export function useGame(roomCode: string | undefined) {
   }, [game?.id]);
 
   const isHost = game?.host_player_id === myPlayerId;
+
+  // Connected players only (excluding host from player list)
+  const connectedPlayers = players.filter(p => p.is_connected);
+  const connectedNonHostPlayers = connectedPlayers.filter(p => p.id !== game?.host_player_id);
 
   const currentSlang = slangWords[game?.current_slang_index ?? 0] ?? null;
 
@@ -164,6 +175,8 @@ export function useGame(roomCode: string | undefined) {
     game,
     setGame,
     players,
+    connectedPlayers,
+    connectedNonHostPlayers,
     slangWords,
     myPlayerId,
     setMyPlayerId,
