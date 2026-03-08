@@ -51,6 +51,9 @@ export async function joinGame(roomCode: string, playerName: string): Promise<{ 
   if (error || !player) return null;
 
   sessionStorage.setItem(`player-${game.id}`, player.id);
+
+  trackEvent('player_joined', { room_code: roomCode, game_id: game.id });
+
   return { gameId: game.id, playerId: player.id };
 }
 
