@@ -14,10 +14,22 @@ export function JoinView({ roomCode, gameState }: JoinViewProps) {
   const [loading, setLoading] = useState(false);
 
   const handleJoin = async () => {
-    if (!name.trim()) { setError('Enter your name'); return; }
+    const trimmed = name.trim();
+    if (!trimmed) { setError('Enter your name'); return; }
+
+    // Check if name matches an active connected player
+    const players = gameState.players ?? [];
+    const connectedDuplicate = players.find(
+      (p: any) => p.name.toLowerCase() === trimmed.toLowerCase() && p.is_connected
+    );
+    if (connectedDuplicate) {
+      setError('A player with that name is already in the game. Please choose a different name.');
+      return;
+    }
+
     setLoading(true);
     setError('');
-    const result = await joinGame(roomCode, name.trim());
+    const result = await joinGame(roomCode, trimmed);
     if (result) {
       gameState.setMyPlayerId(result.playerId);
       gameState.fetchGame();

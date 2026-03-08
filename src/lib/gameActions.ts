@@ -40,8 +40,41 @@ export async function joinGame(roomCode: string, playerName: string): Promise<{ 
     .eq('room_code', roomCode)
     .single();
 
-  if (!game || game.status !== 'lobby') return null;
+  if (!game || game.status === 'finished') return null;
 
+  // Check for a disconnected player with the same name (rejoin)
+  const { data: existingPlayers } = await supabase
+    .from('game_players')
+    .select('*')
+    .eq('game_id', game.id)
+    .ilike('name', playerName);
+
+  const disconnected = existingPlayers?.find(p => !p.is_connected && p.name.toLowerCase() === playerName.toLowerCase());
+
+  if (disconnected) {
+    // Reconnect: restore connection status
+    await supabase
+      .from('game_players')
+      .update({ is_connected: true })
+      .eq('id', disconnected.id);
+
+    // Re-add to turn order if playing and not already in it
+    if (game.status === 'playing' && game.turn_order) {
+      if (!game.turn_order.includes(disconnected.id)) {
+        const newTurnOrder = [...game.turn_order, disconnected.id];
+        await supabase
+          .from('games')
+          .update({ turn_order: newTurnOrder })
+          .eq('id', game.id);
+      }
+    }
+
+    sessionStorage.setItem(`player-${game.id}`, disconnected.id);
+    trackEvent('player_rejoined', { room_code: roomCode, game_id: game.id });
+    return { gameId: game.id, playerId: disconnected.id };
+  }
+
+  // New player
   const { data: player, error } = await supabase
     .from('game_players')
     .insert({ game_id: game.id, name: playerName })
@@ -50,10 +83,17 @@ export async function joinGame(roomCode: string, playerName: string): Promise<{ 
 
   if (error || !player) return null;
 
+  // If game is already playing, add to turn order (skip if host)
+  if (game.status === 'playing' && game.turn_order && player.id !== game.host_player_id) {
+    const newTurnOrder = [...game.turn_order, player.id];
+    await supabase
+      .from('games')
+      .update({ turn_order: newTurnOrder })
+      .eq('id', game.id);
+  }
+
   sessionStorage.setItem(`player-${game.id}`, player.id);
-
   trackEvent('player_joined', { room_code: roomCode, game_id: game.id });
-
   return { gameId: game.id, playerId: player.id };
 }
 

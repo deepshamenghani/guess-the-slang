@@ -37,15 +37,15 @@ export default function GamePage() {
     );
   }
 
-  // Not yet joined
+  // Not yet joined — allow joining at any point (lobby or playing)
   if (!myPlayerId) {
-    if (game.status !== 'lobby') {
+    if (game.status === 'finished') {
       return (
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="card-game text-center max-w-sm animate-scale-in">
-            <div className="text-4xl mb-3">🚫</div>
-            <p className="text-xl font-display font-semibold mb-2">Game Already in Progress</p>
-            <p className="text-muted-foreground mb-4">This game has already started. You can't join mid-game.</p>
+            <div className="text-4xl mb-3">🏁</div>
+            <p className="text-xl font-display font-semibold mb-2">Game Has Ended</p>
+            <p className="text-muted-foreground mb-4">This game is already over.</p>
             <button onClick={() => navigate('/')} className="text-primary font-medium hover:underline">
               ← Start Your Own Game
             </button>
