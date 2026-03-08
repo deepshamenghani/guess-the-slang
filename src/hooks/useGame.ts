@@ -92,6 +92,52 @@ export function useGame(roomCode: string | undefined) {
     };
   }, [game?.id, fetchPlayers]);
 
+  // Presence tracking — detect disconnections
+  useEffect(() => {
+    if (!game?.id || !myPlayerId) return;
+
+    if (presenceChannelRef.current) {
+      supabase.removeChannel(presenceChannelRef.current);
+    }
+
+    const presenceChannel = supabase
+      .channel(`presence-${game.id}`, { config: { presence: { key: myPlayerId } } })
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState();
+        const onlinePlayerIds = new Set(Object.keys(state));
+
+        // Update is_connected for players who left
+        players.forEach(async (p) => {
+          if (p.id === game.host_player_id) return; // skip host
+          const isOnline = onlinePlayerIds.has(p.id);
+          if (p.is_connected && !isOnline) {
+            await supabase
+              .from('game_players')
+              .update({ is_connected: false })
+              .eq('id', p.id);
+          }
+        });
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        if (!key || key === game.host_player_id) return;
+        const leavingPlayer = players.find(p => p.id === key);
+        if (leavingPlayer) {
+          setDisconnectedNames(prev => [...prev, leavingPlayer.name]);
+        }
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await presenceChannel.track({ player_id: myPlayerId });
+        }
+      });
+
+    presenceChannelRef.current = presenceChannel;
+
+    return () => {
+      supabase.removeChannel(presenceChannel);
+    };
+  }, [game?.id, myPlayerId, players.length]);
+
   useEffect(() => { fetchGame(); }, [fetchGame]);
   useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
   useEffect(() => { fetchSlangWords(); }, [fetchSlangWords]);
