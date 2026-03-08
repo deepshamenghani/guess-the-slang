@@ -11,8 +11,10 @@ import {
   transferHost,
   endGameEarly,
   skipWord,
+  handleDisconnectedTurn,
 } from '@/lib/gameActions';
 import { Button } from '@/components/ui/button';
+import { useEffect } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,11 +32,11 @@ interface HostGameViewProps {
 }
 
 export function HostGameView({ gameState }: HostGameViewProps) {
-  const { game, currentSlang, currentPlayer, players } = gameState;
+  const { game, currentSlang, currentPlayer, players, connectedNonHostPlayers } = gameState;
   const [showConfetti, setShowConfetti] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
+  const nonHostPlayers = connectedNonHostPlayers;
 
-  const nonHostPlayers = players.filter((p: any) => p.id !== game?.host_player_id);
   const currentPlayerId = game?.turn_order?.[game?.current_player_index ?? 0] ?? null;
   const totalPlayers = nonHostPlayers.length;
   const totalSlangs = game?.slang_ids?.length ?? 30;
@@ -70,6 +72,21 @@ export function HostGameView({ gameState }: HostGameViewProps) {
   const handleEndGame = () => {
     if (game) endGameEarly(game.id);
   };
+
+  // Auto-skip turn if current player disconnected
+  useEffect(() => {
+    if (!game || game.status !== 'playing' || !currentPlayerId) return;
+    const currentP = players.find((p: any) => p.id === currentPlayerId);
+    if (currentP && !currentP.is_connected) {
+      handleDisconnectedTurn(
+        game.id,
+        game.turn_order ?? [],
+        game.current_player_index,
+        game.current_slang_index,
+        totalSlangs
+      );
+    }
+  }, [currentPlayerId, players]);
 
   if (!currentSlang || !game) return null;
 

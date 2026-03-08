@@ -8,7 +8,7 @@ interface PlayerGameViewProps {
 }
 
 export function PlayerGameView({ gameState }: PlayerGameViewProps) {
-  const { game, currentSlang, currentPlayer, isMyTurn, players } = gameState;
+  const { game, currentSlang, currentPlayer, isMyTurn, players, connectedNonHostPlayers } = gameState;
 
   if (!currentSlang || !game) return null;
 
@@ -16,12 +16,9 @@ export function PlayerGameView({ gameState }: PlayerGameViewProps) {
   const isActive = game.turn_state === 'active';
   const isWaiting = game.turn_state === 'waiting';
   const passCount = game.pass_count ?? 0;
-  const allPassed = showReveal && passCount >= players.length;
+  const allPassed = showReveal && passCount >= connectedNonHostPlayers.length;
   // Only blur on a fresh word (pass_count === 0 and waiting). Once revealed, never re-blur.
   const shouldBlur = isWaiting && passCount === 0;
-
-  // Filter out the host from scoreboard display
-  const nonHostPlayers = players.filter((p: any) => p.id !== game.host_player_id);
 
   return (
     <div className="min-h-screen flex flex-col p-4 pb-6">
@@ -76,7 +73,7 @@ export function PlayerGameView({ gameState }: PlayerGameViewProps) {
       {/* Scoreboard */}
       <div className="mt-4">
         <Scoreboard
-          players={nonHostPlayers}
+          players={connectedNonHostPlayers}
           currentPlayerId={game.turn_order?.[game.current_player_index ?? 0] ?? null}
           hostPlayerId={game.host_player_id}
         />

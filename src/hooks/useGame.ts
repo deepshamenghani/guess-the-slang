@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
+import { toast } from 'sonner';
 
 type Game = Tables<'games'>;
 type Player = Tables<'game_players'>;
@@ -12,7 +13,9 @@ export function useGame(roomCode: string | undefined) {
   const [slangWords, setSlangWords] = useState<SlangWord[]>([]);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [disconnectedNames, setDisconnectedNames] = useState<string[]>([]);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // Fetch game by room code
   const fetchGame = useCallback(async () => {
@@ -89,9 +92,62 @@ export function useGame(roomCode: string | undefined) {
     };
   }, [game?.id, fetchPlayers]);
 
+  // Presence tracking — detect disconnections
+  useEffect(() => {
+    if (!game?.id || !myPlayerId) return;
+
+    if (presenceChannelRef.current) {
+      supabase.removeChannel(presenceChannelRef.current);
+    }
+
+    const presenceChannel = supabase
+      .channel(`presence-${game.id}`, { config: { presence: { key: myPlayerId } } })
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState();
+        const onlinePlayerIds = new Set(Object.keys(state));
+
+        // Update is_connected for players who left
+        players.forEach(async (p) => {
+          if (p.id === game.host_player_id) return; // skip host
+          const isOnline = onlinePlayerIds.has(p.id);
+          if (p.is_connected && !isOnline) {
+            await supabase
+              .from('game_players')
+              .update({ is_connected: false })
+              .eq('id', p.id);
+          }
+        });
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        if (!key || key === game.host_player_id) return;
+        const leavingPlayer = players.find(p => p.id === key);
+        if (leavingPlayer) {
+          setDisconnectedNames(prev => [...prev, leavingPlayer.name]);
+        }
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await presenceChannel.track({ player_id: myPlayerId });
+        }
+      });
+
+    presenceChannelRef.current = presenceChannel;
+
+    return () => {
+      supabase.removeChannel(presenceChannel);
+    };
+  }, [game?.id, myPlayerId, players.length]);
+
   useEffect(() => { fetchGame(); }, [fetchGame]);
   useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
   useEffect(() => { fetchSlangWords(); }, [fetchSlangWords]);
+
+  // Show disconnect toasts
+  useEffect(() => {
+    if (disconnectedNames.length === 0) return;
+    const name = disconnectedNames[disconnectedNames.length - 1];
+    toast.info(`${name} has left the game`);
+  }, [disconnectedNames.length]);
 
   // Restore player ID from session storage
   useEffect(() => {
@@ -102,6 +158,10 @@ export function useGame(roomCode: string | undefined) {
   }, [game?.id]);
 
   const isHost = game?.host_player_id === myPlayerId;
+
+  // Connected players only (excluding host from player list)
+  const connectedPlayers = players.filter(p => p.is_connected);
+  const connectedNonHostPlayers = connectedPlayers.filter(p => p.id !== game?.host_player_id);
 
   const currentSlang = slangWords[game?.current_slang_index ?? 0] ?? null;
 
@@ -115,6 +175,8 @@ export function useGame(roomCode: string | undefined) {
     game,
     setGame,
     players,
+    connectedPlayers,
+    connectedNonHostPlayers,
     slangWords,
     myPlayerId,
     setMyPlayerId,
