@@ -3,7 +3,9 @@ import { getShareUrl } from '@/lib/gameUtils';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-const GENERATION_OPTIONS = [
+const ALL_GENERATIONS = ['Gen Alpha', 'Gen Z', 'Millennial', 'Gen X', 'Boomer'];
+
+const GENERATION_BUTTONS = [
   { value: 'mixed', label: '🎲 Mixed' },
   { value: 'Gen Alpha', label: '🧒 Gen Alpha' },
   { value: 'Gen Z', label: '⚡ Gen Z' },
@@ -12,6 +14,15 @@ const GENERATION_OPTIONS = [
   { value: 'Boomer', label: '📺 Boomer' },
 ];
 
+function parseGenerations(raw: string): string[] {
+  if (!raw || raw === 'mixed') return ALL_GENERATIONS;
+  return raw.split(',').filter(Boolean);
+}
+
+function isAllSelected(gens: string[]): boolean {
+  return ALL_GENERATIONS.every(g => gens.includes(g));
+}
+
 interface LobbyViewProps {
   gameState: any;
 }
@@ -19,7 +30,9 @@ interface LobbyViewProps {
 export function LobbyView({ gameState }: LobbyViewProps) {
   const { game, players, isHost } = gameState;
   const shareUrl = getShareUrl(game.room_code);
-  const selectedGeneration = game.selected_generation ?? 'mixed';
+  const rawGeneration: string = game.selected_generation ?? 'mixed';
+  const selectedGens = parseGenerations(rawGeneration);
+  const isMixed = isAllSelected(selectedGens);
 
   const copyLink = () => {
     navigator.clipboard.writeText(shareUrl);
@@ -30,15 +43,36 @@ export function LobbyView({ gameState }: LobbyViewProps) {
 
   const handleStart = () => {
     if (nonHostPlayers.length >= 2) {
-      startGame(game.id, selectedGeneration);
+      startGame(game.id, rawGeneration);
     }
   };
 
-  const handleGenerationChange = (gen: string) => {
-    setGameGeneration(game.id, gen);
+  const handleToggle = (value: string) => {
+    if (value === 'mixed') {
+      setGameGeneration(game.id, 'mixed');
+      return;
+    }
+
+    let newGens: string[];
+    if (selectedGens.includes(value)) {
+      // Remove it, but don't allow empty
+      newGens = selectedGens.filter(g => g !== value);
+      if (newGens.length === 0) return;
+    } else {
+      newGens = [...selectedGens.filter(g => ALL_GENERATIONS.includes(g)), value];
+    }
+
+    // If all selected, store as mixed
+    if (isAllSelected(newGens)) {
+      setGameGeneration(game.id, 'mixed');
+    } else {
+      setGameGeneration(game.id, newGens.join(','));
+    }
   };
 
-  const selectedLabel = GENERATION_OPTIONS.find(o => o.value === selectedGeneration)?.label ?? '🎲 Mixed';
+  const displayLabels = isMixed
+    ? '🎲 Mixed (All Generations)'
+    : selectedGens.map(g => GENERATION_BUTTONS.find(b => b.value === g)?.label ?? g).join(', ');
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -62,27 +96,30 @@ export function LobbyView({ gameState }: LobbyViewProps) {
         {/* Generation Selector */}
         <div className="card-game mb-4">
           <h3 className="font-display font-semibold text-sm text-muted-foreground mb-3 uppercase tracking-wider">
-            Generation Pack
+            Generation Packs
           </h3>
           {isHost ? (
             <div className="grid grid-cols-3 gap-2">
-              {GENERATION_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => handleGenerationChange(opt.value)}
-                  className={`px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    selectedGeneration === opt.value
-                      ? 'bg-primary text-primary-foreground shadow-md scale-105'
-                      : 'bg-muted hover:bg-muted/80 text-foreground'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+              {GENERATION_BUTTONS.map((opt) => {
+                const isActive = opt.value === 'mixed' ? isMixed : selectedGens.includes(opt.value);
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => handleToggle(opt.value)}
+                    className={`px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-primary text-primary-foreground shadow-md scale-105'
+                        : 'bg-muted hover:bg-muted/80 text-foreground'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-3">
-              <span className="text-lg font-display font-semibold">{selectedLabel}</span>
+              <span className="text-lg font-display font-semibold">{displayLabels}</span>
               <p className="text-xs text-muted-foreground mt-1">Selected by host</p>
             </div>
           )}
