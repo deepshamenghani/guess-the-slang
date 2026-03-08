@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { generateRoomCode, shuffleArray } from '@/lib/gameUtils';
+import { trackEvent } from '@/lib/analytics';
 
 export async function createGame(hostName: string): Promise<{ roomCode: string; gameId: string; playerId: string } | null> {
   const roomCode = generateRoomCode();
