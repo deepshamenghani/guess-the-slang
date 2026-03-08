@@ -68,7 +68,7 @@ export function PlayerGameView({ gameState }: PlayerGameViewProps) {
             slang={currentSlang}
             showMeaning={false}
             heroSize
-            blurred={isWaiting}
+            blurred={shouldBlur}
           />
         )}
       </div>
