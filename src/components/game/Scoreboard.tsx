@@ -24,7 +24,7 @@ export function Scoreboard({ players, currentPlayerId, hostPlayerId }: Scoreboar
               player.id === currentPlayerId
                 ? 'bg-primary/10 ring-2 ring-primary/30'
                 : 'bg-muted/50'
-            } ${!player.is_connected ? 'opacity-40' : ''}`}
+            }`}
           >
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-muted-foreground w-5">
