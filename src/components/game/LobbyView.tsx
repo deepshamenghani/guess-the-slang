@@ -66,7 +66,7 @@ export function LobbyView({ gameState }: LobbyViewProps) {
               </div>
             ))}
           </div>
-          {players.length < 2 && (
+          {nonHostPlayers.length < 2 && (
             <p className="text-center text-sm text-muted-foreground mt-4 animate-pulse-soft">
               Waiting for more players to join...
             </p>
