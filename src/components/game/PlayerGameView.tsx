@@ -8,7 +8,7 @@ interface PlayerGameViewProps {
 }
 
 export function PlayerGameView({ gameState }: PlayerGameViewProps) {
-  const { game, currentSlang, currentPlayer, isMyTurn, players } = gameState;
+  const { game, currentSlang, currentPlayer, isMyTurn, players, connectedNonHostPlayers } = gameState;
 
   if (!currentSlang || !game) return null;
 
