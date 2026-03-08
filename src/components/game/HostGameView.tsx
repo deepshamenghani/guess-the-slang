@@ -131,7 +131,7 @@ export function HostGameView({ gameState }: HostGameViewProps) {
             </Button>
           )}
 
-          {isDecision && (
+          {(isActive || isDecision) && (
             <div className="flex gap-3">
               <Button
                 onClick={handleCorrect}
@@ -147,12 +147,6 @@ export function HostGameView({ gameState }: HostGameViewProps) {
                 → Pass
               </Button>
             </div>
-          )}
-
-          {isActive && (
-            <p className="text-center text-muted-foreground text-sm animate-pulse-soft">
-              Timer running... wait for it to end
-            </p>
           )}
 
           {isReveal && (
