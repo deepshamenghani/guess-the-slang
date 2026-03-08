@@ -32,8 +32,11 @@ interface HostGameViewProps {
 }
 
 export function HostGameView({ gameState }: HostGameViewProps) {
-  const { game, currentSlang, currentPlayer, players } = gameState;
+  const { game, currentSlang, currentPlayer, players, connectedNonHostPlayers } = gameState;
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showTransfer, setShowTransfer] = useState(false);
+
+  const nonHostPlayers = connectedNonHostPlayers;
   const [showTransfer, setShowTransfer] = useState(false);
 
   const nonHostPlayers = players.filter((p: any) => p.id !== game?.host_player_id);
