@@ -31,11 +31,11 @@ export function PlayerGameView({ gameState }: PlayerGameViewProps) {
           Slang {(game.current_slang_index ?? 0) + 1} of {game.slang_ids?.length ?? 30}
         </p>
         {isMyTurn ? (
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full font-display font-semibold">
+          <div className="inline-flex items-center gap-3 bg-primary/10 text-primary px-6 py-3 rounded-full font-display font-bold text-2xl md:text-3xl">
             ✨ It's your turn!
           </div>
         ) : currentPlayer ? (
-          <p className="font-display font-medium text-lg">
+          <p className="font-display font-bold text-2xl md:text-3xl">
             <span className="text-primary">{currentPlayer.name}</span>'s turn
           </p>
         ) : null}
