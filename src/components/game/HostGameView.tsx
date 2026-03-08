@@ -163,12 +163,21 @@ export function HostGameView({ gameState }: HostGameViewProps) {
         {/* Host Controls */}
         <div className="mt-6 space-y-3">
           {isWaiting && (
-            <Button
-              onClick={() => startTurn(game.id)}
-              className="w-full h-14 text-lg font-display font-semibold rounded-2xl bg-mint text-mint-foreground hover:bg-mint/90"
-            >
-              ▶️ Start Turn
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => startTurn(game.id)}
+                className="flex-1 h-14 text-lg font-display font-semibold rounded-2xl bg-mint text-mint-foreground hover:bg-mint/90"
+              >
+                ▶️ Start Turn
+              </Button>
+              <Button
+                onClick={() => skipWord(game.id, game.slang_ids, game.current_slang_index, game.selected_generation)}
+                variant="outline"
+                className="h-14 px-5 text-lg font-display font-semibold rounded-2xl border-2 text-muted-foreground"
+              >
+                ⏭ Skip
+              </Button>
+            </div>
           )}
 
           {(isActive || isDecision) && (
