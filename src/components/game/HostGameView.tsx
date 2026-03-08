@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { SlangCard } from './SlangCard';
 import { TimerBar } from './TimerBar';
 import { Scoreboard } from './Scoreboard';
@@ -14,7 +14,7 @@ import {
   handleDisconnectedTurn,
 } from '@/lib/gameActions';
 import { Button } from '@/components/ui/button';
-import { useEffect } from 'react';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -74,19 +74,25 @@ export function HostGameView({ gameState }: HostGameViewProps) {
   };
 
   // Auto-skip turn if current player disconnected
+  // Use a ref to track if we're already handling a disconnected turn to prevent double-fires
+  const handlingDisconnectRef = useRef(false);
   useEffect(() => {
     if (!game || game.status !== 'playing' || !currentPlayerId) return;
     const currentP = players.find((p: any) => p.id === currentPlayerId);
-    if (currentP && !currentP.is_connected) {
+    // Only handle if player exists and is confirmed disconnected
+    if (currentP && !currentP.is_connected && !handlingDisconnectRef.current) {
+      handlingDisconnectRef.current = true;
       handleDisconnectedTurn(
         game.id,
         game.turn_order ?? [],
         game.current_player_index,
         game.current_slang_index,
         totalSlangs
-      );
+      ).finally(() => {
+        handlingDisconnectRef.current = false;
+      });
     }
-  }, [currentPlayerId, players]);
+  }, [currentPlayerId, players, game?.status]);
 
   if (!currentSlang || !game) return null;
 

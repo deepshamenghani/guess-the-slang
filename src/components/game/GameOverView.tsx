@@ -108,13 +108,18 @@ export function GameOverView({ gameState, navigate }: GameOverViewProps) {
         </div>
 
         {isHost ? (
-          <Button
-            onClick={handleNewGame}
-            disabled={loading}
-            className="w-full h-14 text-lg font-display font-semibold rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground"
-          >
-            {loading ? 'Setting up...' : '🔄 Play Again'}
-          </Button>
+          <div className="space-y-2">
+            <Button
+              onClick={handleNewGame}
+              disabled={loading}
+              className="w-full h-14 text-lg font-display font-semibold rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              {loading ? 'Setting up...' : '🔄 Play Again'}
+            </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              Starts a fresh game — all scores reset to 0
+            </p>
+          </div>
         ) : (
           <div className="text-center py-4">
             <p className="text-muted-foreground animate-pulse-soft">

@@ -17,6 +17,8 @@ export function useGame(roomCode: string | undefined) {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const prevPlayerIdsRef = useRef<Set<string>>(new Set());
+  const playersRef = useRef<Player[]>([]);
+  const disconnectTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   // Fetch game by room code
   const fetchGame = useCallback(async () => {
@@ -93,7 +95,14 @@ export function useGame(roomCode: string | undefined) {
     };
   }, [game?.id, fetchPlayers]);
 
+  // Keep playersRef in sync
+  useEffect(() => {
+    playersRef.current = players;
+  }, [players]);
+
   // Presence tracking — detect disconnections via leave events only
+  // IMPORTANT: Only depends on game.id and myPlayerId — NOT players.length
+  // Using playersRef to avoid recreating the channel when players change
   useEffect(() => {
     if (!game?.id || !myPlayerId) return;
 
@@ -101,19 +110,47 @@ export function useGame(roomCode: string | undefined) {
       supabase.removeChannel(presenceChannelRef.current);
     }
 
+    const gameId = game.id;
+    const hostId = game.host_player_id;
+
     const presenceChannel = supabase
-      .channel(`presence-${game.id}`, { config: { presence: { key: myPlayerId } } })
+      .channel(`presence-${gameId}`, { config: { presence: { key: myPlayerId } } })
       .on('presence', { event: 'leave' }, ({ key }) => {
-        if (!key || key === game.host_player_id) return;
-        const leavingPlayer = players.find(p => p.id === key);
-        if (leavingPlayer && leavingPlayer.is_connected) {
-          // Mark as disconnected in DB
-          supabase
-            .from('game_players')
-            .update({ is_connected: false })
-            .eq('id', key)
-            .then(() => {});
-          setDisconnectedNames(prev => [...prev, leavingPlayer.name]);
+        if (!key || key === hostId) return;
+
+        // Debounce: wait 3 seconds before marking disconnected
+        // This avoids false positives from channel recreation or brief network blips
+        if (disconnectTimers.current.has(key)) return;
+
+        const timer = setTimeout(async () => {
+          disconnectTimers.current.delete(key);
+
+          // Re-check presence state before marking disconnected
+          const state = presenceChannel.presenceState();
+          const stillPresent = Object.values(state).some((entries: any) =>
+            entries.some((e: any) => e.player_id === key || e.presence_ref === key)
+          );
+          if (stillPresent) return;
+
+          const currentPlayers = playersRef.current;
+          const leavingPlayer = currentPlayers.find(p => p.id === key);
+          if (leavingPlayer && leavingPlayer.is_connected) {
+            await supabase
+              .from('game_players')
+              .update({ is_connected: false })
+              .eq('id', key);
+            setDisconnectedNames(prev => [...prev, leavingPlayer.name]);
+          }
+        }, 3000);
+
+        disconnectTimers.current.set(key, timer);
+      })
+      .on('presence', { event: 'join' }, ({ key }) => {
+        // Cancel any pending disconnect timer if player rejoins quickly
+        const timer = disconnectTimers.current.get(key);
+        if (timer) {
+          clearTimeout(timer);
+          disconnectTimers.current.delete(key);
         }
       })
       .subscribe(async (status) => {
@@ -125,9 +162,12 @@ export function useGame(roomCode: string | undefined) {
     presenceChannelRef.current = presenceChannel;
 
     return () => {
+      // Clear all pending disconnect timers on cleanup
+      disconnectTimers.current.forEach(timer => clearTimeout(timer));
+      disconnectTimers.current.clear();
       supabase.removeChannel(presenceChannel);
     };
-  }, [game?.id, myPlayerId, players.length]);
+  }, [game?.id, myPlayerId]);
 
   useEffect(() => { fetchGame(); }, [fetchGame]);
   useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
