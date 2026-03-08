@@ -15,55 +15,35 @@ export function GameOverView({ gameState, navigate }: GameOverViewProps) {
   const nonHostPlayers = sortedPlayers.filter((p: any) => p.id !== game?.host_player_id);
   const [loading, setLoading] = useState(false);
 
-  // Non-host players: watch for next_game_id to auto-redirect
+  // Non-host players: watch game object for next_game_id to auto-redirect
   useEffect(() => {
-    if (!game?.id || isHost) return;
+    if (isHost || !game) return;
+    const nextGameId = (game as any).next_game_id;
+    if (!nextGameId) return;
 
-    const channel = supabase
-      .channel(`game-over-${game.id}`)
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'games',
-        filter: `id=eq.${game.id}`,
-      }, (payload: any) => {
-        const nextGameId = payload.new?.next_game_id;
-        if (nextGameId) {
-          // Look up new game's room code and set session player ID
-          supabase
-            .from('games')
-            .select('room_code')
-            .eq('id', nextGameId)
-            .single()
-            .then(({ data }) => {
-              if (data) {
-                // Map current player to new game's player by name
-                const myPlayer = sortedPlayers.find((p: any) => p.id === myPlayerId);
-                if (myPlayer) {
-                  supabase
-                    .from('game_players')
-                    .select('id, name')
-                    .eq('game_id', nextGameId)
-                    .then(({ data: newPlayers }) => {
-                      const match = newPlayers?.find((p: any) => p.name === myPlayer.name);
-                      if (match) {
-                        sessionStorage.setItem(`player-${nextGameId}`, match.id);
-                      }
-                      navigate(`/game/${data.room_code}`);
-                    });
-                } else {
-                  navigate(`/game/${data.room_code}`);
-                }
-              }
-            });
+    // Fetch new game's room code and map player
+    (async () => {
+      const { data: newGame } = await supabase
+        .from('games')
+        .select('room_code')
+        .eq('id', nextGameId)
+        .single();
+      if (!newGame) return;
+
+      const myPlayer = sortedPlayers.find((p: any) => p.id === myPlayerId);
+      if (myPlayer) {
+        const { data: newPlayers } = await supabase
+          .from('game_players')
+          .select('id, name')
+          .eq('game_id', nextGameId);
+        const match = newPlayers?.find((p: any) => p.name === myPlayer.name);
+        if (match) {
+          sessionStorage.setItem(`player-${nextGameId}`, match.id);
         }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [game?.id, isHost, myPlayerId, sortedPlayers, navigate]);
+      }
+      navigate(`/game/${newGame.room_code}`);
+    })();
+  }, [(game as any)?.next_game_id, isHost, myPlayerId, sortedPlayers, navigate]);
 
   const handleNewGame = async () => {
     if (!game) return;
