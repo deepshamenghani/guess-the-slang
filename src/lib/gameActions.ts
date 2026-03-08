@@ -107,6 +107,33 @@ export async function startGame(gameId: string, selectedGeneration: string = 'mi
     .eq('id', gameId);
 }
 
+export async function skipWord(gameId: string, currentSlangIds: string[], currentIndex: number, selectedGeneration: string = 'mixed') {
+  // Fetch a replacement slang not already in the list
+  let query = supabase.from('slang_words').select('id');
+  if (selectedGeneration && selectedGeneration !== 'mixed') {
+    const gens = selectedGeneration.split(',').filter(Boolean);
+    if (gens.length === 1) {
+      query = query.eq('generation', gens[0]);
+    } else if (gens.length > 1) {
+      query = query.in('generation', gens);
+    }
+  }
+  const { data: allSlangs } = await query;
+  if (!allSlangs) return;
+
+  const available = allSlangs.filter(s => !currentSlangIds.includes(s.id));
+  if (available.length === 0) return;
+
+  const replacement = shuffleArray(available)[0];
+  const newSlangIds = [...currentSlangIds];
+  newSlangIds[currentIndex] = replacement.id;
+
+  await supabase
+    .from('games')
+    .update({ slang_ids: newSlangIds })
+    .eq('id', gameId);
+}
+
 export async function startTurn(gameId: string) {
   await supabase
     .from('games')
