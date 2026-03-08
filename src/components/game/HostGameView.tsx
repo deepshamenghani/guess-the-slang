@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { SlangCard } from './SlangCard';
 import { TimerBar } from './TimerBar';
 import { Scoreboard } from './Scoreboard';
