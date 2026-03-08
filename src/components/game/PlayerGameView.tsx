@@ -16,12 +16,9 @@ export function PlayerGameView({ gameState }: PlayerGameViewProps) {
   const isActive = game.turn_state === 'active';
   const isWaiting = game.turn_state === 'waiting';
   const passCount = game.pass_count ?? 0;
-  const allPassed = showReveal && passCount >= players.length;
+  const allPassed = showReveal && passCount >= connectedNonHostPlayers.length;
   // Only blur on a fresh word (pass_count === 0 and waiting). Once revealed, never re-blur.
   const shouldBlur = isWaiting && passCount === 0;
-
-  // Filter out the host from scoreboard display
-  const nonHostPlayers = players.filter((p: any) => p.id !== game.host_player_id);
 
   return (
     <div className="min-h-screen flex flex-col p-4 pb-6">
