@@ -203,6 +203,13 @@ export async function transferHost(gameId: string, newHostId: string) {
     .eq('id', gameId);
 }
 
+export async function endGameEarly(gameId: string) {
+  await supabase
+    .from('games')
+    .update({ status: 'finished', turn_state: 'waiting' })
+    .eq('id', gameId);
+}
+
 export async function startNewGame(gameId: string) {
   // Get current game's players and room code
   const { data: game } = await supabase
