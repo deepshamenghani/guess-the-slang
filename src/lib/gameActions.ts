@@ -258,6 +258,8 @@ export async function endGameEarly(gameId: string) {
     .from('games')
     .update({ status: 'finished', turn_state: 'waiting' })
     .eq('id', gameId);
+
+  trackEvent('end_game_early', { game_id: gameId });
 }
 
 export async function startNewGame(gameId: string) {
