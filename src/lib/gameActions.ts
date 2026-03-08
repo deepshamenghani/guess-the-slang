@@ -51,7 +51,14 @@ export async function joinGame(roomCode: string, playerName: string): Promise<{ 
   return { gameId: game.id, playerId: player.id };
 }
 
-export async function startGame(gameId: string) {
+export async function setGameGeneration(gameId: string, generation: string) {
+  await supabase
+    .from('games')
+    .update({ selected_generation: generation })
+    .eq('id', gameId);
+}
+
+export async function startGame(gameId: string, selectedGeneration: string = 'mixed') {
   // Get players
   const { data: players } = await supabase
     .from('game_players')
@@ -60,10 +67,12 @@ export async function startGame(gameId: string) {
 
   if (!players || players.length < 2) return;
 
-  // Get 30 random slang words
-  const { data: allSlangs } = await supabase
-    .from('slang_words')
-    .select('id');
+  // Get slang words filtered by generation
+  let query = supabase.from('slang_words').select('id');
+  if (selectedGeneration !== 'mixed') {
+    query = query.eq('generation', selectedGeneration);
+  }
+  const { data: allSlangs } = await query;
 
   if (!allSlangs || allSlangs.length === 0) return;
 

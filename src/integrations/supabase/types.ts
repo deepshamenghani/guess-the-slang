@@ -58,6 +58,7 @@ export type Database = {
           id: string
           pass_count: number
           room_code: string
+          selected_generation: string
           slang_ids: string[] | null
           status: string
           turn_order: string[] | null
@@ -72,6 +73,7 @@ export type Database = {
           id?: string
           pass_count?: number
           room_code: string
+          selected_generation?: string
           slang_ids?: string[] | null
           status?: string
           turn_order?: string[] | null
@@ -86,6 +88,7 @@ export type Database = {
           id?: string
           pass_count?: number
           room_code?: string
+          selected_generation?: string
           slang_ids?: string[] | null
           status?: string
           turn_order?: string[] | null

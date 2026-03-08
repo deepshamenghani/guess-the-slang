@@ -1,0 +1,1 @@
+ALTER TABLE public.games ADD COLUMN selected_generation text NOT NULL DEFAULT 'mixed';

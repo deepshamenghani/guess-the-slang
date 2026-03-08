@@ -1,7 +1,16 @@
-import { startGame } from '@/lib/gameActions';
+import { startGame, setGameGeneration } from '@/lib/gameActions';
 import { getShareUrl } from '@/lib/gameUtils';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+
+const GENERATION_OPTIONS = [
+  { value: 'mixed', label: '🎲 Mixed' },
+  { value: 'Gen Alpha', label: '🧒 Gen Alpha' },
+  { value: 'Gen Z', label: '⚡ Gen Z' },
+  { value: 'Millennial', label: '📱 Millennial' },
+  { value: 'Gen X', label: '🎸 Gen X' },
+  { value: 'Boomer', label: '📺 Boomer' },
+];
 
 interface LobbyViewProps {
   gameState: any;
@@ -10,6 +19,7 @@ interface LobbyViewProps {
 export function LobbyView({ gameState }: LobbyViewProps) {
   const { game, players, isHost } = gameState;
   const shareUrl = getShareUrl(game.room_code);
+  const selectedGeneration = game.selected_generation ?? 'mixed';
 
   const copyLink = () => {
     navigator.clipboard.writeText(shareUrl);
@@ -20,9 +30,15 @@ export function LobbyView({ gameState }: LobbyViewProps) {
 
   const handleStart = () => {
     if (nonHostPlayers.length >= 2) {
-      startGame(game.id);
+      startGame(game.id, selectedGeneration);
     }
   };
+
+  const handleGenerationChange = (gen: string) => {
+    setGameGeneration(game.id, gen);
+  };
+
+  const selectedLabel = GENERATION_OPTIONS.find(o => o.value === selectedGeneration)?.label ?? '🎲 Mixed';
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -41,6 +57,35 @@ export function LobbyView({ gameState }: LobbyViewProps) {
               📋 Copy Link
             </button>
           </div>
+        </div>
+
+        {/* Generation Selector */}
+        <div className="card-game mb-4">
+          <h3 className="font-display font-semibold text-sm text-muted-foreground mb-3 uppercase tracking-wider">
+            Generation Pack
+          </h3>
+          {isHost ? (
+            <div className="grid grid-cols-3 gap-2">
+              {GENERATION_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleGenerationChange(opt.value)}
+                  className={`px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    selectedGeneration === opt.value
+                      ? 'bg-primary text-primary-foreground shadow-md scale-105'
+                      : 'bg-muted hover:bg-muted/80 text-foreground'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-3">
+              <span className="text-lg font-display font-semibold">{selectedLabel}</span>
+              <p className="text-xs text-muted-foreground mt-1">Selected by host</p>
+            </div>
+          )}
         </div>
 
         <div className="card-game mb-4">
