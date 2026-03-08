@@ -45,7 +45,7 @@ const Index = () => {
       <div className="w-full max-w-md animate-fade-in">
         {/* Logo / Title */}
         <div className="text-center mb-10">
-          <img src={logo} alt="Guess the Slang logo" className="w-24 h-24 mx-auto mb-4 rounded-2xl" />
+          <img src={logo} alt="Guess the Slang logo" className="w-40 h-40 mx-auto mb-4 rounded-3xl" />
           <h1 className="text-4xl font-display font-bold text-gradient mb-2">
             Guess the Slang
           </h1>
