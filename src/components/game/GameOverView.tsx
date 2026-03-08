@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Confetti } from './Confetti';
 import { startNewGame } from '@/lib/gameActions';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import type { NavigateFunction } from 'react-router-dom';
 
@@ -14,12 +15,62 @@ export function GameOverView({ gameState, navigate }: GameOverViewProps) {
   const nonHostPlayers = sortedPlayers.filter((p: any) => p.id !== game?.host_player_id);
   const [loading, setLoading] = useState(false);
 
+  // Non-host players: watch for next_game_id to auto-redirect
+  useEffect(() => {
+    if (!game?.id || isHost) return;
+
+    const channel = supabase
+      .channel(`game-over-${game.id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'games',
+        filter: `id=eq.${game.id}`,
+      }, (payload: any) => {
+        const nextGameId = payload.new?.next_game_id;
+        if (nextGameId) {
+          // Look up new game's room code and set session player ID
+          supabase
+            .from('games')
+            .select('room_code')
+            .eq('id', nextGameId)
+            .single()
+            .then(({ data }) => {
+              if (data) {
+                // Map current player to new game's player by name
+                const myPlayer = sortedPlayers.find((p: any) => p.id === myPlayerId);
+                if (myPlayer) {
+                  supabase
+                    .from('game_players')
+                    .select('id, name')
+                    .eq('game_id', nextGameId)
+                    .then(({ data: newPlayers }) => {
+                      const match = newPlayers?.find((p: any) => p.name === myPlayer.name);
+                      if (match) {
+                        sessionStorage.setItem(`player-${nextGameId}`, match.id);
+                      }
+                      navigate(`/game/${data.room_code}`);
+                    });
+                } else {
+                  navigate(`/game/${data.room_code}`);
+                }
+              }
+            });
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [game?.id, isHost, myPlayerId, sortedPlayers, navigate]);
+
   const handleNewGame = async () => {
     if (!game) return;
     setLoading(true);
-    const newRoomCode = await startNewGame(game.id);
-    if (newRoomCode) {
-      navigate(`/game/${newRoomCode}`);
+    const result = await startNewGame(game.id);
+    if (result) {
+      navigate(`/game/${result.newRoomCode}`);
     }
     setLoading(false);
   };
@@ -76,7 +127,7 @@ export function GameOverView({ gameState, navigate }: GameOverViewProps) {
           </div>
         </div>
 
-        {isHost && (
+        {isHost ? (
           <Button
             onClick={handleNewGame}
             disabled={loading}
@@ -84,6 +135,12 @@ export function GameOverView({ gameState, navigate }: GameOverViewProps) {
           >
             {loading ? 'Setting up...' : '🔄 Play Again'}
           </Button>
+        ) : (
+          <div className="text-center py-4">
+            <p className="text-muted-foreground animate-pulse-soft">
+              ⏳ Waiting for host to start next game...
+            </p>
+          </div>
         )}
 
         <button

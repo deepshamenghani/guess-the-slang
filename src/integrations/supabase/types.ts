@@ -56,6 +56,7 @@ export type Database = {
           current_slang_index: number
           host_player_id: string | null
           id: string
+          next_game_id: string | null
           pass_count: number
           room_code: string
           selected_generation: string
@@ -71,6 +72,7 @@ export type Database = {
           current_slang_index?: number
           host_player_id?: string | null
           id?: string
+          next_game_id?: string | null
           pass_count?: number
           room_code: string
           selected_generation?: string
@@ -86,6 +88,7 @@ export type Database = {
           current_slang_index?: number
           host_player_id?: string | null
           id?: string
+          next_game_id?: string | null
           pass_count?: number
           room_code?: string
           selected_generation?: string
@@ -95,7 +98,15 @@ export type Database = {
           turn_state?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "games_next_game_id_fkey"
+            columns: ["next_game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       slang_words: {
         Row: {

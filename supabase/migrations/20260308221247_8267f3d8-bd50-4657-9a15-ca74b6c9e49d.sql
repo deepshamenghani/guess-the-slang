@@ -1,0 +1,1 @@
+ALTER TABLE public.games ADD COLUMN next_game_id uuid REFERENCES public.games(id) DEFAULT NULL;
