@@ -14,7 +14,116 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      game_players: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: string
+          is_connected: boolean
+          name: string
+          score: number
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: string
+          is_connected?: boolean
+          name: string
+          score?: number
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: string
+          is_connected?: boolean
+          name?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_players_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          created_at: string
+          current_player_index: number
+          current_slang_index: number
+          host_player_id: string | null
+          id: string
+          pass_count: number
+          room_code: string
+          slang_ids: string[] | null
+          status: string
+          turn_order: string[] | null
+          turn_state: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_player_index?: number
+          current_slang_index?: number
+          host_player_id?: string | null
+          id?: string
+          pass_count?: number
+          room_code: string
+          slang_ids?: string[] | null
+          status?: string
+          turn_order?: string[] | null
+          turn_state?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_player_index?: number
+          current_slang_index?: number
+          host_player_id?: string | null
+          id?: string
+          pass_count?: number
+          room_code?: string
+          slang_ids?: string[] | null
+          status?: string
+          turn_order?: string[] | null
+          turn_state?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      slang_words: {
+        Row: {
+          created_at: string
+          extra_context: string | null
+          generation: string
+          id: string
+          meaning: string
+          related_terms: string[] | null
+          word: string
+        }
+        Insert: {
+          created_at?: string
+          extra_context?: string | null
+          generation: string
+          id?: string
+          meaning: string
+          related_terms?: string[] | null
+          word: string
+        }
+        Update: {
+          created_at?: string
+          extra_context?: string | null
+          generation?: string
+          id?: string
+          meaning?: string
+          related_terms?: string[] | null
+          word?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
