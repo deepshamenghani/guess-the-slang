@@ -7,6 +7,10 @@ type Game = Tables<'games'>;
 type Player = Tables<'game_players'>;
 type SlangWord = Tables<'slang_words'>;
 
+type Game = Tables<'games'>;
+type Player = Tables<'game_players'>;
+type SlangWord = Tables<'slang_words'>;
+
 export function useGame(roomCode: string | undefined) {
   const [game, setGame] = useState<Game | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
