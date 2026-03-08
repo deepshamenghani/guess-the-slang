@@ -10,6 +10,7 @@ import {
   passToNext,
   transferHost,
   endGameEarly,
+  skipWord,
 } from '@/lib/gameActions';
 import { Button } from '@/components/ui/button';
 import {
