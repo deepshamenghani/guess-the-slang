@@ -24,7 +24,7 @@ export function GameOverView({ gameState, navigate }: GameOverViewProps) {
     setLoading(false);
   };
 
-  const winner = sortedPlayers[0];
+  const winner = nonHostPlayers[0];
   const isWinner = winner?.id === myPlayerId;
 
   return (
