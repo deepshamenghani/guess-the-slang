@@ -184,6 +184,7 @@ export async function markCorrect(gameId: string, playerId: string, totalPlayers
         .from('games')
         .update({ status: 'finished', turn_state: 'waiting' })
         .eq('id', gameId);
+      trackEvent('game_completed', { game_id: gameId });
     } else {
       const nextPlayerIndex = (currentPlayerIndex + 1) % totalPlayers;
       await supabase
