@@ -92,7 +92,7 @@ export function useGame(roomCode: string | undefined) {
     };
   }, [game?.id, fetchPlayers]);
 
-  // Presence tracking — detect disconnections
+  // Presence tracking — detect disconnections via leave events only
   useEffect(() => {
     if (!game?.id || !myPlayerId) return;
 
@@ -102,26 +102,16 @@ export function useGame(roomCode: string | undefined) {
 
     const presenceChannel = supabase
       .channel(`presence-${game.id}`, { config: { presence: { key: myPlayerId } } })
-      .on('presence', { event: 'sync' }, () => {
-        const state = presenceChannel.presenceState();
-        const onlinePlayerIds = new Set(Object.keys(state));
-
-        // Update is_connected for players who left
-        players.forEach(async (p) => {
-          if (p.id === game.host_player_id) return; // skip host
-          const isOnline = onlinePlayerIds.has(p.id);
-          if (p.is_connected && !isOnline) {
-            await supabase
-              .from('game_players')
-              .update({ is_connected: false })
-              .eq('id', p.id);
-          }
-        });
-      })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+      .on('presence', { event: 'leave' }, ({ key }) => {
         if (!key || key === game.host_player_id) return;
         const leavingPlayer = players.find(p => p.id === key);
-        if (leavingPlayer) {
+        if (leavingPlayer && leavingPlayer.is_connected) {
+          // Mark as disconnected in DB
+          supabase
+            .from('game_players')
+            .update({ is_connected: false })
+            .eq('id', key)
+            .then(() => {});
           setDisconnectedNames(prev => [...prev, leavingPlayer.name]);
         }
       })
