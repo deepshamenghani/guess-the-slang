@@ -263,6 +263,48 @@ export async function endGameEarly(gameId: string) {
   trackEvent('end_game_early', { game_id: gameId });
 }
 
+export async function handleDisconnectedTurn(gameId: string, turnOrder: string[], currentPlayerIndex: number, currentSlangIndex: number, totalSlangs: number) {
+  // Find next connected player in turn order
+  const { data: gamePlayers } = await supabase
+    .from('game_players')
+    .select('id, is_connected')
+    .eq('game_id', gameId);
+
+  if (!gamePlayers) return;
+
+  const connectedInTurnOrder = turnOrder.filter(id => {
+    const p = gamePlayers.find(gp => gp.id === id);
+    return p?.is_connected;
+  });
+
+  // If 1 or fewer connected players remain, end game
+  if (connectedInTurnOrder.length <= 1) {
+    await supabase
+      .from('games')
+      .update({ status: 'finished', turn_state: 'waiting' })
+      .eq('id', gameId);
+    trackEvent('game_ended_disconnection', { game_id: gameId });
+    return;
+  }
+
+  // Find next connected player starting from current index
+  let nextIndex = currentPlayerIndex;
+  for (let i = 0; i < turnOrder.length; i++) {
+    nextIndex = (currentPlayerIndex + 1 + i) % turnOrder.length;
+    const nextId = turnOrder[nextIndex];
+    if (connectedInTurnOrder.includes(nextId)) break;
+  }
+
+  await supabase
+    .from('games')
+    .update({
+      current_player_index: nextIndex,
+      turn_state: 'waiting',
+      pass_count: 0,
+    })
+    .eq('id', gameId);
+}
+
 export async function startNewGame(gameId: string) {
   // Get current game's players and room code
   const { data: game } = await supabase

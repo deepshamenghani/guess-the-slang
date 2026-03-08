@@ -39,7 +39,6 @@ export function HostGameView({ gameState }: HostGameViewProps) {
   const nonHostPlayers = connectedNonHostPlayers;
   const [showTransfer, setShowTransfer] = useState(false);
 
-  const nonHostPlayers = players.filter((p: any) => p.id !== game?.host_player_id);
   const currentPlayerId = game?.turn_order?.[game?.current_player_index ?? 0] ?? null;
   const totalPlayers = nonHostPlayers.length;
   const totalSlangs = game?.slang_ids?.length ?? 30;
