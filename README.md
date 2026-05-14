@@ -8,14 +8,6 @@ Built with [Lovable](https://lovable.dev) to test how far vibe coding can take a
 
 ---
 
-## Why I Built It
-
-I'm an AI Engineering Director at Sprout Social, and I wanted to test a hypothesis: with the right tooling, a senior engineering leader who doesn't code daily can ship a real multiplayer product end-to-end through AI-augmented development.
-
-The goal wasn't to learn React. It was to feel the friction of vibe coding a real product — make the product decisions, watch the AI build, iterate when reality didn't match intent. The slang game was the vessel; the experiment was the build process.
-
----
-
 ## The Game in 30 Seconds
 
 - One person hosts (facilitator role — they run the game, don't play).
@@ -138,41 +130,5 @@ A few decisions I'd revisit in a v2:
 5. **Mobile-responsive testing.** Built and tested at desktop viewport. Office party games should work on phones — needs proper mobile QA.
 
 ---
-
-## How It Works (Tech Stack)
-
-- **Frontend:** React + TypeScript + Vite
-- **UI:** shadcn/ui components on Tailwind CSS
-- **Backend / Realtime:** Supabase (Postgres + realtime subscriptions for live multiplayer sync)
-- **Analytics:** PostHog
-- **Build platform:** [Lovable](https://lovable.dev)
-
-The interesting part isn't the stack — it's that the entire thing was vibe coded through Lovable. I described what I wanted, Lovable generated and iterated, and I made product decisions along the way.
-
----
-
-## Local Development
-
-```sh
-# Clone the repo
-git clone https://github.com/deepshamenghani/guess-the-slang.git
-cd guess-the-slang
-
-# Install dependencies
-npm install
-
-# Start the dev server
-npm run dev
-```
-
-The Supabase anon key in `.env` is intentionally public — it's the client-side key, restricted via Row Level Security. The actual service role key is not committed.
-
----
-
-## About This Project
-
-This was a hands-on experiment in AI-augmented building for someone who doesn't code production code daily but makes product decisions for a living. The takeaway: with vibe coding, the bottleneck for senior leaders shipping real products is no longer "can I write the code" — it's "do I have the product judgment to make the right decisions while AI builds."
-
-I'm Director of AI Engineering at Sprout Social, where my team shipped Trellis (a customer-facing AI agent serving 6,200+ MAU with 400% MoM growth). This personal project is part of how I stay current on AI-augmented development patterns.
 
 **Live app:** [guess-the-slang.lovable.app](https://guess-the-slang.lovable.app/)
