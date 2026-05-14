@@ -13,8 +13,10 @@ Built with [Lovable](https://lovable.dev) to test how far vibe coding can take a
 - One person hosts (facilitator role — they run the game, don't play).
 - 2+ players join via a 5-character room code.
 - Host picks a generational slang pack (Gen Alpha, Gen Z, Millennial, Gen X, Boomer, or Mixed).
-- Each turn: an active player sees a slang word and describes its meaning verbally. Other players see the word but not the meaning — they have to guess what it means. Host knows the answer and marks Correct or Pass.
-- 30 words per game. Highest score wins.
+- Each turn has two stages:
+  - **Pre-turn:** Host sees the upcoming word + its full definition. Everyone else sees a blurred card. Host decides whether to start the turn or skip the word.
+  - **Active turn:** Host clicks Start Turn → the word is revealed to all players, but only the host knows the meaning. The active player describes the meaning verbally; others guess.
+- Host marks Correct (player scores) or Pass (next player tries the same word). 30 words per game.
 
 It's structurally similar to Codenames or Time's Up — but designed specifically for cross-generational workplace teams.
 
@@ -34,18 +36,28 @@ Slang is generational by definition. A Gen Z game played by Boomers fails fast (
 
 ### 2. Information asymmetry is the core mechanic
 
-Everyone seeing the same thing would break the game — the "guess" disappears the moment all players see the answer.
+Everyone seeing the same thing would break the game. So would *no one* seeing anything. The mechanic is structured in two stages — and the asymmetry shifts at each stage.
 
-**Decision:** Three different views simultaneously, with the host holding the answer key:
+**Stage 1 — Pre-turn: host has everything, players have nothing**
 
-| Host view | Active player view | Waiting player view |
-|---|---|---|
-| ![Host sees full card with definition, synonyms, fun fact](docs/host-gameplay-view.png) | ![Active player sees "It's your turn!" and the word, no definition](docs/active-player-view.png) | ![Waiting player sees the word with active player's turn indicator](docs/waiting-player-view.png) |
-| Sees the word **plus** the definition, synonyms, and fun fact. Controls turn flow. | Sees the word only. Knows it's their turn (`✨ It's your turn!`). Describes the meaning verbally. | Sees the word but not the meaning. Listens to the active player's description. Guesses what the slang means out loud. |
+![Host sees full card with definition, synonyms, fun fact, and Start Turn / Skip buttons](docs/host-pre-turn-view.png)
+*Host's view: full card visible (word, definition, synonyms, fun fact) with Start Turn and Skip controls.*
 
-The key insight: the **word** is shared, but the **meaning** is the asymmetry. You might recognize "Main Character" or "Sigma" without knowing what it means in Gen Alpha slang — so the game tests whether players can communicate the actual meaning, not just the word itself.
+![Players see a fully blurred card before the host starts the turn](docs/players-blurred-pre-turn.png)
+*What everyone else sees before the host clicks Start Turn: a completely blurred card. No word, no clue.*
 
-This is what makes it work as a cross-generational icebreaker: a Boomer might see "Main Character" and have no idea what it means; a Gen Z player has to explain it without saying the definition; everyone learns. If everyone saw everything, the game collapses.
+**Why this matters:** The host gets a private preview. If the word is boring, too obscure, or already covered, they can **Skip** — and the players never even saw it. No "ugh, that one again" moment. No social pressure to play through a dud.
+
+**Stage 2 — After Start Turn: word revealed, meaning hidden**
+
+![Active player sees the slang word "Delulu" revealed with their turn indicator and a timer running](docs/active-player-word-revealed.png)
+*After host clicks Start Turn: the word is revealed to all players. The active player sees "✨ It's your turn!"; waiting players see "[Name]'s turn." Only the host knows the definition.*
+
+**Why this matters:** Once the turn starts, the word is shared but the **meaning** is the asymmetry. You might recognize "Delulu" or "Main Character" without knowing what they mean in Gen Z slang. The active player describes the meaning verbally; the others guess what it actually means; the host confirms.
+
+This is what makes it work as a cross-generational icebreaker: a Boomer might see "Delulu" and have no idea what it means; a Gen Z player has to explain it without saying the definition; everyone learns. If everyone saw the answer key, the game collapses. If no one saw the word, players couldn't even start guessing.
+
+The two-stage asymmetry — host preview, then shared reveal — is the design choice that makes the game work.
 
 ### 3. No in-app guessing input
 
