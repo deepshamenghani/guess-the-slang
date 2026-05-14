@@ -1,10 +1,8 @@
 # Guess the Slang
 
-**A real-time multiplayer party game where one player describes generational slang and their teammates guess.**
+**A real-time multiplayer party game where one player guesses the meaning of generational slangs.**
 
-🎮 **Live app:** [guess-the-slang.lovable.app](https://guess-the-slang.lovable.app/)
-
-Built with [Lovable](https://lovable.dev) to test how far vibe coding can take a real multiplayer product with deliberate UX decisions, not just a toy demo.
+🎮 **Live app:** [guess-the-slang.lovable.app](https://guess-the-slang.lovable.app/) - Built with Lovable
 
 ---
 
@@ -14,11 +12,9 @@ Built with [Lovable](https://lovable.dev) to test how far vibe coding can take a
 - 2+ players join via a 5-character room code.
 - Host picks a generational slang pack (Gen Alpha, Gen Z, Millennial, Gen X, Boomer, or Mixed).
 - Each turn has two stages:
-  - **Pre-turn:** Host sees the upcoming word + its full definition. Everyone else sees a blurred card. Host decides whether to start the turn or skip the word.
-  - **Active turn:** Host clicks Start Turn → the word is revealed to all players, but only the host knows the meaning. The active player describes the meaning verbally; others guess.
-- Host marks Correct (player scores) or Pass (next player tries the same word). 30 words per game.
-
-It's structurally similar to Codenames or Time's Up — but designed specifically for cross-generational workplace teams.
+  - **Pre-turn:** Host sees the upcoming word + its full definition. Everyone else sees a blurred card. Host decides whether to start the turn or skip the word if its boring.
+  - **Active turn:** Host clicks Start Turn → the word is revealed to all players, but only the host knows the meaning. The active player describes the meaning verbally.
+- Host marks Correct (player scores) or Pass (next player tries the same word if the first player got it incorrect). 30 words per game.
 
 ---
 
@@ -28,7 +24,7 @@ This section documents the deliberate product calls I made while building. The i
 
 ### 1. Generation packs solve the "is this game for me?" problem
 
-Slang is generational by definition. A Gen Z game played by Boomers fails fast (they don't know the words and feel excluded). A Boomer game played by Gen Z is just trivia, not play.
+Slang is generational by definition. A Gen Z game played by Gen Z fails fast (because there is not much guessing to do). Because the audience is workplace, with mixed generations, selecting based on who all are participating gives the flexibility.
 
 **Decision:** Six packs — Gen Alpha, Gen Z, Millennial, Gen X, Boomer, and Mixed. The host picks based on their group's composition.
 
@@ -53,11 +49,9 @@ Everyone seeing the same thing would break the game. So would *no one* seeing an
 ![Active player sees the slang word "Delulu" revealed with their turn indicator and a timer running](docs/active-player-word-revealed.png)
 *After host clicks Start Turn: the word is revealed to all players. The active player sees "✨ It's your turn!"; waiting players see "[Name]'s turn." Only the host knows the definition.*
 
-**Why this matters:** Once the turn starts, the word is shared but the **meaning** is the asymmetry. You might recognize "Delulu" or "Main Character" without knowing what they mean in Gen Z slang. The active player describes the meaning verbally; the others guess what it actually means; the host confirms.
+**Why this matters:** Once the turn starts, the word is shared but the **meaning** is the asymmetry. You might recognize "Delulu" or "Main Character" without knowing what they mean in Gen Z slang. The active player guesses the meaning verbally; the host confirms.
 
-This is what makes it work as a cross-generational icebreaker: a Boomer might see "Delulu" and have no idea what it means; a Gen Z player has to explain it without saying the definition; everyone learns. If everyone saw the answer key, the game collapses. If no one saw the word, players couldn't even start guessing.
-
-The two-stage asymmetry — host preview, then shared reveal — is the design choice that makes the game work.
+This is what makes it work as a cross-generational icebreaker: a specific generation might see "Delulu" and have no idea what it means.
 
 ### 3. No in-app guessing input
 
@@ -80,7 +74,7 @@ In Codenames, the spymaster doesn't compete. Same model here.
 Same button name in other games would conflate two different things.
 
 **Decision:**
-- **Skip** (pre-turn, host only): "I don't like this word for this player." Swaps the slang for a NEW word; same player's turn.
+- **Skip** (pre-turn, host only): "I don't like this word for this game." Swaps the slang for a NEW word; same player's turn.
 - **Pass** (during turn): "This player couldn't guess it." Same slang word goes to the NEXT player.
 
 These are different turn-management actions. Conflating them would make the game feel arbitrary.
@@ -98,8 +92,6 @@ This keeps the social energy in the room high instead of stressed.
 A 2-player guessing game has only one guesser at a time — no one to play off, no group dynamic.
 
 **Decision:** Game requires host + 2 players minimum (3 total) to start. Below that, the "Start Game" button is disabled.
-
-The button label currently says "Need at least 2 players" — which is technically misleading (it means 2 non-host players). This is a known issue worth fixing.
 
 ### 8. Play Again preserves the group, resets the game
 
@@ -119,8 +111,6 @@ Office environments mean people step away mid-game for calls.
 - Game continues if remaining players ≥ minimum
 - If all players drop, game auto-transitions to Final Standings with last-known scores
 
-**Tradeoff accepted:** No rejoin mechanism. If you leave, you're out. This is a tradeoff I'd revisit — see "What I'd Do Differently" below.
-
 ### 10. Transfer Host as an escape hatch
 
 What if the host has to leave?
@@ -128,22 +118,6 @@ What if the host has to leave?
 **Decision:** Host can transfer the facilitator role to another player mid-game. The game continues without losing state.
 
 This prevents the game from becoming hostage to one person's availability.
-
----
-
-## What I'd Do Differently
-
-A few decisions I'd revisit in a v2:
-
-1. **Allow rejoin within a grace window.** Currently, if a player drops mid-game, they can't rejoin (the join screen says "game has already started"). A 30-second rejoin window would handle the "I lost wifi for a second" case without changing the broader design.
-
-2. **Fix the "Need at least 2 players" button label.** It actually requires 3 total (host + 2). Should say "Need 2 more players" when at 1, or "Need at least 3 players to start" generally.
-
-3. **Tighten RLS policies.** Database security is permissive (`USING true`) because the game has no PII at stake. For any version that stored real data, I'd add row-level policies that only allow updates to your own session.
-
-4. **Track word difficulty/freshness.** Right now words can repeat across games. A simple usage counter per word + per session could ensure variety.
-
-5. **Mobile-responsive testing.** Built and tested at desktop viewport. Office party games should work on phones — needs proper mobile QA.
 
 ---
 
