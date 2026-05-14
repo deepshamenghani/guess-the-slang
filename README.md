@@ -13,7 +13,7 @@ Built with [Lovable](https://lovable.dev) to test how far vibe coding can take a
 - One person hosts (facilitator role — they run the game, don't play).
 - 2+ players join via a 5-character room code.
 - Host picks a generational slang pack (Gen Alpha, Gen Z, Millennial, Gen X, Boomer, or Mixed).
-- Each turn: an active player gets a slang word (blurred to others), describes it verbally to teammates. Host marks Correct or Pass.
+- Each turn: an active player sees a slang word and describes its meaning verbally. Other players see the word but not the meaning — they have to guess what it means. Host knows the answer and marks Correct or Pass.
 - 30 words per game. Highest score wins.
 
 It's structurally similar to Codenames or Time's Up — but designed specifically for cross-generational workplace teams.
@@ -34,14 +34,18 @@ Slang is generational by definition. A Gen Z game played by Boomers fails fast (
 
 ### 2. Information asymmetry is the core mechanic
 
-Everyone seeing the same screen would break the game — the "guess" disappears the moment all players see the answer.
+Everyone seeing the same thing would break the game — the "guess" disappears the moment all players see the answer.
 
-**Decision:** Three different views simultaneously:
-- **Host:** Sees everything (word, definition, synonyms, fun fact). They're the answer-checker.
-- **Active player:** Sees blurred card, knows it's their turn ("✨ It's your turn!"). They describe what they're seeing verbally.
-- **Waiting players:** See fully blurred card. They listen and guess out loud.
+**Decision:** Three different views simultaneously, with the host holding the answer key:
 
-This information asymmetry is what makes the game work as an in-person social experience instead of a solo digital one.
+| Host view | Active player view | Waiting player view |
+|---|---|---|
+| ![Host sees full card with definition, synonyms, fun fact](docs/host-gameplay-view.png) | ![Active player sees "It's your turn!" and the word, no definition](docs/active-player-view.png) | ![Waiting player sees the word with active player's turn indicator](docs/waiting-player-view.png) |
+| Sees the word **plus** the definition, synonyms, and fun fact. Controls turn flow. | Sees the word only. Knows it's their turn (`✨ It's your turn!`). Describes the meaning verbally. | Sees the word but not the meaning. Listens to the active player's description. Guesses what the slang means out loud. |
+
+The key insight: the **word** is shared, but the **meaning** is the asymmetry. You might recognize "Main Character" or "Sigma" without knowing what it means in Gen Alpha slang — so the game tests whether players can communicate the actual meaning, not just the word itself.
+
+This is what makes it work as a cross-generational icebreaker: a Boomer might see "Main Character" and have no idea what it means; a Gen Z player has to explain it without saying the definition; everyone learns. If everyone saw everything, the game collapses.
 
 ### 3. No in-app guessing input
 
